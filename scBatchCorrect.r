@@ -10,33 +10,36 @@ library(cowplot)
 
 # Load the ChP datasets
 samples <- vector()
-tumors <- c("C1", "C3", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T11", "T12")
-tumor_types <- vector(mode = "list", length = 12)
-tumor_types <- c("Normal", "Normal", "CPP", "CPP", "CPP", "aCPP", "CPC", "CPC", "CPC", "CPC", "CPP", "CPC")
+tumors <- c("C1", "C3", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12")
+tumor_types <- vector(mode = "list", length = 14)
+tumor_types <- c("Normal", "Normal", "CPP", "CPP", "CPP", "aCPP", "CPC", "CPC", "CPC", "CPC", "CPC", "CPP", "CPP", "CPC")
 names(tumor_types) <- tumors
-status_list <- vector(mode = "list", length = 12)
-status_list <- c('Normal', 'Normal', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor')
+status_list <- vector(mode = "list", length = 14)
+status_list <- c('Normal', 'Normal', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor', 'Tumor','Tumor', 'Tumor')
 names(status_list) <- tumors
-tumors <- c("T9", "T10")
+#tumors <- c("C1", "C3", "T2", "T11")
+tumors <- c("C1", "C3", "T2", "T3", "T4", "T6", "T7", "T8", "T12")
 data.folder = "/icgc/dkfzlsdf/analysis/OE0519_projects/chptumor/filteredmatrices/"
 for (tumor in tumors){
   file_loc <- paste0(data.folder,tumor,"/filtered_feature_bc_matrix")
   data <- Read10X(data.dir = file_loc)
   # Initialize the Seurat object with the raw (non-normalized data).
   object <- CreateSeuratObject(counts = data, project = "BatchCorrect", min.cells = 3, min.features = 200)
+  #filter cells
+  object[["percent.mt"]] <- PercentageFeatureSet(object, pattern = "^MT-")
+  object <- subset(object, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 10)
   object
   object$batch <- tumor
   object$type <- tumor_types[tumor]
-  samples <- c(samples, object)
   object$status <- status_list[tumor]
+  samples <- c(samples, object)
   print(tumor)
 }
 
-#filter
-for (sample in samples){
-  sample[["percent.mt"]] <- PercentageFeatureSet(sample, pattern = "^MT-")
-  sample <- subset(sample, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 10)
-}
+
+
+
+#filter genes
 
 #make sce
 samples.sce <- vector()
@@ -54,17 +57,19 @@ for (sample in samples.sce){
   sample <- computeSumFactors(sample, cluster=clusters)
   sample <- normalize(sample)
   sample.celNorm <- as.Seurat(sample, counts = "counts", data = "logcounts")
-  sample <- FindVariableFeatures(sample, selection.method = "vst", nfeatures = 2000)
+  #sample <- FindVariableFeatures(sample, selection.method = "vst", nfeatures = 2000)
   samples.cNorm <- c(samples.cNorm, sample.celNorm)
   S.no <- S.no+1
   print(S.no)
   print(length(samples.cNorm))
 }
 
+nsamples <- vector()
 for (sample in samples){
   sample <- subset(sample, subset = nFeature_RNA > 400)
   sample <- NormalizeData(sample, verbose = TRUE)
   sample <- FindVariableFeatures(sample, selection.method = "vst", nfeatures = 2000)
+  nsamples <- c(nsamples, sample)
 }
 
 
@@ -81,14 +86,14 @@ for (object in samples){
 }
 
 # Reentry point 
-file_names <- tumors
-file_no <- 1
-for (object in samples){
-  fname <- paste0(file_names[file_no],".Robj")
-  load(object,file=fname)
-  print(fname)
-  file_no <- file_no+1
-}
+#file_names <- tumors
+#file_no <- 1
+#for (object in samples){
+#  fname <- paste0(file_names[file_no],".Robj")
+#  load(object,file=fname)
+#  print(fname)
+#  file_no <- file_no+1
+#}
 
 file_no <- 1
 for (object in samples.cNorm){
@@ -99,7 +104,7 @@ for (object in samples.cNorm){
 }
 
 #batch correction
-choroid.anchors <- FindIntegrationAnchors(object.list = samples, dims = 1:20)
+choroid.anchors <- FindIntegrationAnchors(object.list = nsamples, dims = 1:20)
 choroid.combined <- IntegrateData(anchorset = choroid.anchors, dims = 1:20)
 DefaultAssay(choroid.combined) <- "integrated"
 
@@ -115,11 +120,12 @@ save(choroid.combined,file='choroid_combined.Robj')
 
 #Repeat for cell normalized Data
 choroidCN.anchors <- FindIntegrationAnchors(object.list = samples.cNorm, dims = 1:20)
-choroidCN.combined <- IntegrateData(anchorset = choroidCN.anchors, dims = 1:20)
-DefaultAssay(choroidCN.combined) <- "integrated"
-choroidCN.combined <- ScaleData(choroidCN.combined, verbose = FALSE)
-choroidCN.combined <- RunPCA(choroidCN.combined, npcs = 30, verbose = FALSE)
+choroidCN.combined <- IntegrateData(anchorset = choroid.anchors, dims = 1:20)
 
+choroidCN.combined <- ScaleData(choroidCN.combined, verbose = FALSE)
+choroidCN.combined <- RunPCA(choroidCN.combined, npcs = 30, verbose = TRUE)
+
+DefaultAssay(choroidCN.combined) <- "integrated"
 choroidCN.combined <- RunUMAP(choroidCN.combined, reduction = "pca", dims = 1:20)
 choroidCN.combined <- FindNeighbors(choroidCN.combined, reduction = "pca", dims = 1:20)
 choroidCN.combined <- FindClusters(choroidCN.combined, resolution = 0.5)
@@ -127,7 +133,6 @@ choroidCN.combined <- FindClusters(choroidCN.combined, resolution = 0.5)
 #Save clustered objects
 save(choroid.combined,file='choroid_combined.Robj')
 save(choroidCN.combined,file='choroidCN_combined.Robj')
-
 # Visualization
 p1 <- DimPlot(choroidCN.combined, reduction = "umap", group.by = "batch")
 p2 <- DimPlot(choroidCN.combined, reduction = "umap", label = TRUE)
