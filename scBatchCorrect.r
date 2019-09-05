@@ -141,12 +141,25 @@ plot_grid(p1, p2)
 DimPlot(choroidCN.combined, reduction = "umap", split.by = "batch")
 
 DefaultAssay(choroidCN.combined) <- "RNA"
-FeaturePlot(choroidCN.combined, features = c("CD163", "TTR", "OTX2", "AQP1", "SULF1", "PECAM1", "VWF", "COL2A1", 
-                                           "COL3A2", "PPBP"), min.cutoff = "q9")
+#Epithelial
+FeaturePlot(choroidCN.combined, features = c("KCNQ1", "TTR", "OTX2", "TJP1", "AQP1", "EGFL7", "KIF18B", "PARD3", "MUC1", 
+                                             "PRKCI"), min.cutoff = "q9")
 
-FeaturePlot(choroidCN.combined, features = c("CD163", "TTR", "CDH1", "DSP", "TJP1", "OTX2", "AQP1", "SULF1", "FLT1", "CDH5", "PECAM1", "VWF", "COL2A1", 
-                                             "COL3A2", "CDH2", "SNAI1", "EPHA7", "SLC24A3", "SULT1E1", "SLC4A4", "PDZRN4", "THSD4", "FN1", "TWIST1"), min.cutoff = "q9")
+#Endothelial
+FeaturePlot(choroidCN.combined, features = c("NOTCH4", "EGFL7", "VWF", "DSP", "EFNB2", "BTNL9", "DLL4", "COL4", "FLT1", "FLRT2", "PECAM1", "VWF", "COL2A1", 
+                                             "COL3A2", "CDH2", "SNAI1", "EPHA7", "SLC24A3", "SULT1E1", "SLC4A4", "PDZRN4", "THSD4", "FN1", "TWIST1", "COL4A1", "COL4A2"), min.cutoff = "q9")
+#Mesenchymal
+FeaturePlot(choroidCN.combined, features = c("CARMN", "SLC6A1", "EBF2", "CDH6", "DACH1", "COL1A2"), min.cutoff = "q9")
 
+#Proliferative?
+FeaturePlot(choroidCN.combined, features = c("ASPM", "KIF18B", "KIF14", "TOP2A", "KIF2C", "TACC3", "NCAPG", "C2orf48", "CENPF", "MKI67"), min.cutoff = "q9")
+
+#TCell
+FeaturePlot(choroidCN.combined, features = c("CD247", "SLFN12L", "CD2", "LCK", "CD96", "SCML4", "ITK", "THEMIS", "NGK"), min.cutoff = "q9")
+#Bcell
+FeaturePlot(choroidCN.combined, features = c("CD79A", "BTLAL", "FCRL2", "LCK", "IGHD", "FCRL5", "CD22", "MS4A1", "FCRL1"), min.cutoff = "q9")
+#Macrophages&Monocytes
+FeaturePlot(choroidCN.combined, features = c("CD163", "SLC11A1", "PIK3R5",  "RGS1", "DOCK2", "LAPTM5", "C3", "CSF3R" ,"TRPM2", "SLCO2B1"), min.cutoff = "q9")
 choroid4.markers <- FindConservedMarkers(choroidCN.combined, ident.1 = 4, grouping.var = "batch", verbose = FALSE)
 head(choroid4.markers)
 
