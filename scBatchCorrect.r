@@ -86,14 +86,12 @@ for (object in samples){
 }
 
 # Reentry point 
-#file_names <- tumors
-#file_no <- 1
-#for (object in samples){
-#  fname <- paste0(file_names[file_no],".Robj")
-#  load(object,file=fname)
-#  print(fname)
-#  file_no <- file_no+1
-#}
+# file_names <- tumors
+# for (names in file_names){
+#   fname <- paste0(names,".Robj")
+#   load(file=fname)
+#   print(fname)
+# }
 
 file_no <- 1
 for (object in samples.cNorm){
