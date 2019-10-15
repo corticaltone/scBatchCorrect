@@ -57,7 +57,7 @@ for (sample in samples.sce){
   sample <- computeSumFactors(sample, cluster=clusters)
   sample <- normalize(sample)
   sample.celNorm <- as.Seurat(sample, counts = "counts", data = "logcounts")
-  #sample <- FindVariableFeatures(sample, selection.method = "vst", nfeatures = 2000)
+  sample.celNorm <- FindVariableFeatures(sample.celNorm, selection.method = "vst", nfeatures = 2000)
   samples.cNorm <- c(samples.cNorm, sample.celNorm)
   S.no <- S.no+1
   print(S.no)
