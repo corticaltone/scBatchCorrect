@@ -178,6 +178,19 @@ avg.i.cells$gene <- rownames(avg.i.cells)
 genes.to.label = c("ISG15", "LY6E", "IFI6", "ISG20", "MX1", "IFIT2", "IFIT1", "CXCL10", "CCL8")
 p1 <- ggplot(avg.i.cells, aes(C1, T1)) + geom_point() + ggtitle("CD4 Naive T Cells")
 
+#Immunme response marker expression
+plots <- VlnPlot(choroidCN.combined, features = c("HLA-DRA", "HLA-DRB1", "HLA-DRB3", "HLA-DRB4", "HLA-DRB5", "IL4",  "MSR1"), split.by = "type", group.by = "celltype", 
+                 +                  pt.size = 0, combine = FALSE)
+CombinePlots(plots = plots, ncol = 2)
+plots <- VlnPlot(choroidCN.combined, features = c("HLA-DPB1", "HLA-DOA", "HLA-DOB", "HLA-DMA", "HLA-DMB", "HLA-DQA1", "HLA-DQB1"), split.by = "type", group.by = "celltype", 
+                 pt.size = 0, combine = FALSE)
+#plots <- VlnPlot(choroidCN.combined, features = c("CD68", "CD36",  "CCL7",  "SCARA5", "IL10", "MARCO", "SCARF1",  "SCARF2",  "SCARA3",  "COLEC12", "OLR1", "CCL2", "ARG1", "ARG2", "OLR1", "VEGFA",  "CCL18",  "CCL3", "CCL3L1", "CCL8"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
+plots <- VlnPlot(choroidCN.combined, features = c("OLR1", "CCL2", "ARG1", "ARG2", "OLR1", "VEGFA",  "CCL18",  "CCL3", "CCL3L1", "CCL8"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
+
+plots <- VlnPlot(choroidCN.combined, features = c("CD68", "CD36",  "CCL7",  "SCARA5", "IL10", "MARCO", "SCARF1",  "SCARF2",  "SCARA3",  "COLEC12"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
+plots <- VlnPlot(choroidCN.combined, features = c("PDCD1LG2", "HIF1A","ARNT", "CCL5", "CCL1", "CCL6", "CCL15", "CCL15-CCL14", "CCL23"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
+VlnPlot(choroidCN.combined, features = c("C3", "HAVCR2", "IL4",  "MSR1",  "IL12A", "IL12B", split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE ))
+
 T3 <- subset(choroidCN.combined, subset = batch == "T3")
 
 library(data.table)
