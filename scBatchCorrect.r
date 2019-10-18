@@ -189,7 +189,7 @@ plots <- VlnPlot(choroidCN.combined, features = c("OLR1", "CCL2", "ARG1", "ARG2"
 
 plots <- VlnPlot(choroidCN.combined, features = c("CD68", "CD36",  "CCL7",  "SCARA5", "IL10", "MARCO", "SCARF1",  "SCARF2",  "SCARA3",  "COLEC12"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
 plots <- VlnPlot(choroidCN.combined, features = c("PDCD1LG2", "HIF1A","ARNT", "CCL5", "CCL1", "CCL6", "CCL15", "CCL15-CCL14", "CCL23"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
-VlnPlot(choroidCN.combined, features = c("C3", "HAVCR2", "IL4",  "MSR1",  "IL12A", "IL12B", split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE ))
+plots <- VlnPlot(choroidCN.combined, features = c("C3", "HAVCR2", "IL4",  "MSR1",  "IL12A", "IL12B"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
 
 T3 <- subset(choroidCN.combined, subset = batch == "T3")
 
