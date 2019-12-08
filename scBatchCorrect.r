@@ -139,6 +139,19 @@ plot_grid(p1, p2)
 DimPlot(choroidCN.combined, reduction = "umap", split.by = "batch")
 
 DefaultAssay(choroidCN.combined) <- "RNA"
+
+#Find Conserved markers in clusters
+markers <- vector()
+for (clusters in levels(choroidCN.combined$seurat_clusters)) {
+  marker <- FindConservedMarkers(choroidCN.combined, ident.1 = clusters, grouping.var = "type", verbose = TRUE)
+  file_name <- paste0(clusters,"markers.csv")
+  write.csv(marker, file = file_name, row.names=TRUE)
+  print(file_name)
+  markers <- c(markers, marker)
+}
+save(markers,file='choroidCN_combinedMarkers.Robj')
+
+
 #Epithelial
 FeaturePlot(choroidCN.combined, features = c("KCNQ1", "TTR", "OTX2", "TJP1", "AQP1", "EGFL7", "KIF18B", "PARD3", "MUC1", 
                                              "PRKCI"), min.cutoff = "q9")
