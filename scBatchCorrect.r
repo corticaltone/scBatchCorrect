@@ -171,40 +171,34 @@ FeaturePlot(choroidCN.combined, features = c("CD247", "SLFN12L", "CD2", "LCK", "
 FeaturePlot(choroidCN.combined, features = c("CD79A", "BTLAL", "FCRL2", "LCK", "IGHD", "FCRL5", "CD22", "MS4A1", "FCRL1"), min.cutoff = "q9")
 #Macrophages&Monocytes
 FeaturePlot(choroidCN.combined, features = c("CD163", "SLC11A1", "PIK3R5",  "RGS1", "DOCK2", "LAPTM5", "C3", "CSF3R" ,"TRPM2", "SLCO2B1"), min.cutoff = "q9")
-choroid4.markers <- FindConservedMarkers(choroidCN.combined, ident.1 = 4, grouping.var = "batch", verbose = FALSE)
-head(choroid4.markers)
-
-choroid6.markers <- FindConservedMarkers(choroidCN.combined, ident.1 = 6, grouping.var = "batch", verbose = FALSE)
-head(choroid6.markers)
 
 choroidCN.combined <- RenameIdents(choroidCN.combined, `0` = "Epithelial", `1` = "Epithelial", `2` = "Epithelial", 
-                                `3` = "Epithelial", `4` = "Immune", `5` = "Epithelial", `6` = "Epithelial", `7` = "Epithelial", `8` = "Epithelial", `9` = "Epithelial", 
-                                `10` = "Epithelial", `11` = "Epithelial", `12` = "Endothelial", `13` = "Mesenchymal", `14` = "Mesenchymal", `15` = "Immune" )
+                                   `3` = "Epithelial", `4` = "Immune", `5` = "Epithelial", `6` = "Epithelial", `7` = "Epithelial", `8` = "Epithelial", `9` = "Epithelial", 
+                                   `10` = "Epithelial", `11` = "Epithelial", `12` = "Endothelial", `13` = "Mesenchymal", `14` = "Mesenchymal", `15` = "Immune" )
 
-DimPlot(choroidCN.combined, label = TRUE)
+#compare cell type specific gene expression
+## get tumor type DEGs
+CPT.combined <- choroidCN.combined
+CPT.combined$celltype <- Idents(CPT.combined)
+Idents(CPT.combined) <- "celltype.type"
+Epi.response <- FindMarkers(CPT.combined, ident.1 = "Epithelial_CPC", ident.2 = "Epithelial_CPP", verbose = FALSE)
+head(Epi.response, n = 15)
+write.table(Epi.response, file = "EpithelialDEGS.csv", sep = ",")
 
-i.cells <- subset(choroidCN.combined, idents = "Immune")
-Idents(i.cells) <- "batch"
-avg.i.cells <- log1p(AverageExpression(i.cells, verbose = FALSE)$RNA)
-avg.i.cells$gene <- rownames(avg.i.cells)
 
-genes.to.label = c("ISG15", "LY6E", "IFI6", "ISG20", "MX1", "IFIT2", "IFIT1", "CXCL10", "CCL8")
-p1 <- ggplot(avg.i.cells, aes(C1, T1)) + geom_point() + ggtitle("CD4 Naive T Cells")
+e.cells <- subset(choroidCN.combined, idents = "Epithelial")
+Idents(e.cells) <- "type"
+avg.e.cells <- log1p(AverageExpression(e.cells, verbose = FALSE)$RNA)
+avg.e.cells$gene <- rownames(avg.e.cells)
 
-#Immunme response marker expression
-plots <- VlnPlot(choroidCN.combined, features = c("HLA-DRA", "HLA-DRB1", "HLA-DRB3", "HLA-DRB4", "HLA-DRB5", "IL4",  "MSR1"), split.by = "type", group.by = "celltype", 
-                 +                  pt.size = 0, combine = FALSE)
-CombinePlots(plots = plots, ncol = 2)
-plots <- VlnPlot(choroidCN.combined, features = c("HLA-DPB1", "HLA-DOA", "HLA-DOB", "HLA-DMA", "HLA-DMB", "HLA-DQA1", "HLA-DQB1"), split.by = "type", group.by = "celltype", 
-                 pt.size = 0, combine = FALSE)
-#plots <- VlnPlot(choroidCN.combined, features = c("CD68", "CD36",  "CCL7",  "SCARA5", "IL10", "MARCO", "SCARF1",  "SCARF2",  "SCARA3",  "COLEC12", "OLR1", "CCL2", "ARG1", "ARG2", "OLR1", "VEGFA",  "CCL18",  "CCL3", "CCL3L1", "CCL8"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
-plots <- VlnPlot(choroidCN.combined, features = c("OLR1", "CCL2", "ARG1", "ARG2", "OLR1", "VEGFA",  "CCL18",  "CCL3", "CCL3L1", "CCL8"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
+genes.to.label = c("WNT5B", "HIF1A", "YAP1", "MKI67", "WNT2B", "VEGF", "IL6", "CXCL10", "CCL8")
+p1 <- ggplot(avg.e.cells, aes(CPP, CPC)) + geom_point() + ggtitle("Epithelial Cells")
 
-plots <- VlnPlot(choroidCN.combined, features = c("CD68", "CD36",  "CCL7",  "SCARA5", "IL10", "MARCO", "SCARF1",  "SCARF2",  "SCARA3",  "COLEC12"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
-plots <- VlnPlot(choroidCN.combined, features = c("PDCD1LG2", "HIF1A","ARNT", "CCL5", "CCL1", "CCL6", "CCL15", "CCL15-CCL14", "CCL23"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
-plots <- VlnPlot(choroidCN.combined, features = c("C3", "HAVCR2", "IL4",  "MSR1",  "IL12A", "IL12B"), split.by = "type", group.by = "celltype", pt.size = 0, combine = FALSE)
-
-T3 <- subset(choroidCN.combined, subset = batch == "T3")
+#Cell type specific marker expression
+proliferative <- c("MKI67", "TOP2A", "ASPM", "TACC3")
+epithelial <- c("AQP1", "OTX2", "PARD3", "KCNQ1", "TTR")
+VlnPlot(object = CPT.combined, features = proliferative, split.by = "type", group.by = "celltype")
+VlnPlot(object = CPT.combined, features = epithelial, split.by = "type", group.by = "celltype")
 
 library(data.table)
 data_to_write_out <- as.data.frame(as.matrix(choroidCN.combined[[RNA]]))
