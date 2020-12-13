@@ -392,3 +392,60 @@ g <- ggplot(fischTable, aes(x=reorder(Term, Annotated), y=Annotated , label=Expe
   geom_bar(stat='identity', aes(fill=Term), width=.5,position="dodge")  + theme(plot.title = element_text(hjust = 0.5, size = 14), legend.position = "none") + 
   labs(title= paste0("Top 20 enriched GO terms cluster ", Cluster_no, " ", cancer_type), x="GO term", y="Number Genes (Fisher's statistic)") + coord_flip() + geom_text(aes(label=paste0("(", Fisher, ")")), position=position_dodge(width=0.1), vjust=0.25, hjust=0)
 g
+
+#type specific ligand interaction analysis
+##create subset
+car <- choroidCN.combined
+Idents(car) <- car$type
+car <- subset(car, idents = "CPC")
+Idents(car) <- car$seurat_clusters
+##filter clusters with low cell count
+kept_clusters <- vector()
+tbl <- table(car$seurat_clusters)
+for (clus in 1:(length(tbl))) {
+  if (tbl[[clus]] > 10) {
+    kept_clusters <- c(kept_clusters, names(tbl)[clus])
+  }
+}
+car <- subset(car, idents = kept_clusters)
+#prepare data for clus_interacts
+cluster = as.numeric(Idents(car))
+data = data.frame(car[["RNA"]]@data)
+all.genes <- row.names(data)
+#identify interactions
+interact_data <- clus_interact(data, all.genes, cluster)
+signal <- interact_data[[1]]
+
+#count Interactions
+X <- length(table(car$seurat_clusters))
+Inter_count <- numeric(X)
+names(Inter_count) <- names(table(car$seurat_clusters))
+for (clus_count in 1:X) {
+  Inter_count[clus_count] <- count_signal(names(signal), clus_count)
+}
+Inter_count
+
+write.table(Inter_count, file = "SignalCountsbyClusterCar.csv", sep = ",")
+
+#Write interactions to disk
+codes <- vector()
+ligands <- vector()
+scores <- vector()
+receptors <- vector()
+for (interacts in names(signal)) {
+  a <- interacts
+  cluster_interact <- signal[[a]]
+  code <- row.names(cluster_interact)
+  clusA <- cluster_interact[[1]]
+  clusB <- cluster_interact[[2]]
+  score <- cluster_interact[[4]]
+  codes <- c(codes, code)
+  ligands <- c(ligands, clusA)
+  receptors <- c(receptors, clusB)
+  scores <- c(scores, score)
+  
+  write.table(cluster_interact, file = paste0(a,"Carcinoma.csv"), sep = ",")
+}
+all_interact <- cbind(codes, ligands, receptors,scores)
+write.table(all_interact, file = "AllInteractionsCarcinoma.csv", sep = ",")
+
